@@ -21,6 +21,7 @@ class HomeViewModel {
   String visibility;
   String cloudiness;
   String pressure;
+  bool isNight;
   List<ForecastViewModel> forecastHours;
   List<ForecastViewModel> forecastDays;
 
@@ -54,6 +55,7 @@ class HomeViewModel {
     visibility = ((model.list.first.visibility ?? 0)/1000).toString() + " km";
     cloudiness = (model.list.first.clouds.all ?? 0).toString() + "%";
     pressure = (model.list.first.main.pressure ?? 0).toString() + " hPa";
+    isNight = model.list.first.sys.pod == "n";
 
     forecastHours = model.list.map((e){
       return ForecastViewModel(
