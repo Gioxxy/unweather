@@ -131,9 +131,9 @@ class _HomePageState extends State<HomePage> {
                                   child: ListView.builder(
                                     padding: EdgeInsets.symmetric(horizontal: 20),
                                     scrollDirection: Axis.horizontal,
-                                    itemCount: 5,
+                                    itemCount: 9,
                                     itemBuilder: (context, index){
-                                      return Forecast();
+                                      return Forecast(viewModel: _viewModel.forecastHours[index],);
                                     },
                                   ),
                                 ),
@@ -192,7 +192,7 @@ class _HomePageState extends State<HomePage> {
                                     scrollDirection: Axis.horizontal,
                                     itemCount: 5,
                                     itemBuilder: (context, index){
-                                      return Forecast();
+                                      return Forecast(viewModel: _viewModel.forecastDays[index],);
                                     },
                                   ),
                                 ),

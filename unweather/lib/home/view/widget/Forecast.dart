@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:unweather/home/viewModel/ForecastViewModel.dart';
 
 class Forecast extends StatelessWidget {
+
+  ForecastViewModel viewModel;
+
+  Forecast({this.viewModel});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -8,7 +14,7 @@ class Forecast extends StatelessWidget {
       child: Column(
         children: <Widget>[
           Text(
-            '12:00',
+            viewModel.topText,
             style: TextStyle(
               fontFamily: 'Avenir Next',
               fontSize: 15.0,
@@ -18,12 +24,12 @@ class Forecast extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           Image.asset(
-            "assets/images/cloudy.png",
+            viewModel.iconName,
             width: 65.0,
             height: 58.0,
           ),
           Text(
-            '13°',
+            viewModel.bottomText,
             style: TextStyle(
               fontFamily: 'Avenir Next',
               fontSize: 15.0,

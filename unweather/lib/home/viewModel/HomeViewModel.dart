@@ -45,7 +45,7 @@ class HomeViewModel {
     city = model.city.name;
     temperature = model.list.first.main.temp.round().toString() + "°";
     day = model.list.first.dtTxt.day.toString();
-    month = " " + DateFormat("MMM", "it_IT").format(model.list.first.dtTxt);
+    month = " " + _toTitleCase(DateFormat("MMM", "it_IT").format(model.list.first.dtTxt));
     maxTemperature = "max " + model.list.first.main.tempMax.round().toString() + "°";
     minTemperature = "min " + model.list.first.main.tempMin.round().toString() + "°";
     rain = (model.list.first.rain?.threeH ?? 0).toString() + " mm";
@@ -54,6 +54,27 @@ class HomeViewModel {
     visibility = ((model.list.first.visibility ?? 0)/1000).toString() + " km";
     cloudiness = (model.list.first.clouds.all ?? 0).toString() + "%";
     pressure = (model.list.first.main.pressure ?? 0).toString() + " hPa";
+
+    forecastHours = model.list.map((e){
+      return ForecastViewModel(
+        topText: DateFormat("HH:mm", "it_IT").format(e.dtTxt),
+        iconName: "assets/images/cloudy.png",
+        bottomText: e.main.temp.round().toString() + "°"
+      );
+    }).toList();
+    forecastHours.first.topText = "Ora";
+
+    forecastDays = model.list.map((e){
+      if(e.dtTxt.hour == 12) {
+        return ForecastViewModel(
+            topText: _toTitleCase(DateFormat("d MMM", "it_IT").format(e.dtTxt)),
+            iconName: "assets/images/cloudy.png",
+            bottomText: e.main.temp.round().toString() + "°"
+        );
+      }
+      return null;
+    }).where((e) => e != null).toList();
+    // forecastDays.first.topText = "Oggi";
   }
 
   Future<HomeViewModel> featchData() async {
@@ -73,5 +94,15 @@ class HomeViewModel {
       }
     );
     return completer.future;
+  }
+
+  String _toTitleCase(String str) {
+    return str
+        .replaceAllMapped(
+        RegExp(
+            r'[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+'),
+            (Match m) =>
+        "${m[0][0].toUpperCase()}${m[0].substring(1).toLowerCase()}")
+        .replaceAll(RegExp(r'(_|-)+'), ' ');
   }
 }
