@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import 'home/view/HomePage.dart';
+import 'home/view/HomeView.dart';
 
 void main() {
   initializeDateFormatting('it_IT', null).then((_) => runApp(App()));
@@ -17,7 +17,7 @@ class App extends StatelessWidget {
         primarySwatch: Colors.blue,
         fontFamily: "AvenirNext"
       ),
-      home: HomePage(),
+      home: HomeView(),
     );
   }
 }

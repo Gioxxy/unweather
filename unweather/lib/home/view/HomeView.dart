@@ -1,42 +1,85 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:unweather/home/model/DealySearch.dart';
 import 'package:unweather/home/view/widget/Forecast.dart';
 import 'package:unweather/home/viewModel/HomeViewModel.dart';
 import 'package:unweather/utils/AppColors.dart';
 
-class HomePage extends StatefulWidget {
+class HomeView extends StatefulWidget {
   @override
-  _HomePageState createState() => _HomePageState();
+  _HomeViewState createState() => _HomeViewState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomeViewState extends State<HomeView> {
 
   HomeViewModel _viewModel;
+  Future<HomeViewModel> _req;
+  TextEditingController _cityTextEditingController;
+  DealySearch _dealySearch = DealySearch(milliseconds: 500);
+  ScrollController _scrollController;
+  bool shouldFadeTemp = false;
 
   @override
   void initState() {
     super.initState();
-
+    _cityTextEditingController = TextEditingController(text: "Torino");
     _viewModel = HomeViewModel();
+    _req = _viewModel.featchData(city: _cityTextEditingController.text);
+    _scrollController = ScrollController();
+    _scrollController.addListener(() {
+      if(_scrollController.position.pixels >= 200){
+        setState(() {
+          shouldFadeTemp = true;
+        });
+      } else {
+        setState(() {
+          shouldFadeTemp = false;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _cityTextEditingController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  _searchForCity({String city}){
+    print("_searchForCity");
+    _req = _viewModel.featchData(city: _cityTextEditingController.text);
+    _req.then((value){
+      setState(() {});
+    });
+    _req.catchError((error){
+      setState(() {});
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.primary,
-      body: FutureBuilder(
-        future: _viewModel.featchData(),
+      body: Stack(
+        children: [
+        FutureBuilder<HomeViewModel>(
+        future: _req,
         builder: (context, snapshot){
-
+          if(snapshot.hasError) {
+            return Center(child: Text(snapshot.error.toString(), style: TextStyle(color: Colors.white54, fontSize: 20, fontWeight: FontWeight.bold),));
+          }
           if(!snapshot.hasData) {
             return Center(child: CircularProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(Colors.white)));
           }
 
+          HomeViewModel viewModel = snapshot.data;
+
           return Container(
             height: double.infinity,
             width: double.infinity,
-            color: _viewModel.isNight ? AppColors.night : AppColors.day,
+            color: viewModel.isNight ? AppColors.night : AppColors.day,
             child: Stack(
               alignment: Alignment.topCenter,
               children: [
@@ -48,7 +91,7 @@ class _HomePageState extends State<HomePage> {
                     child: Container(
                       height: MediaQuery.of(context).size.width/2,
                       width: MediaQuery.of(context).size.width/2,
-                      color: _viewModel.isNight ? AppColors.nightAccent : AppColors.dayAccent,
+                      color: viewModel.isNight ? AppColors.nightAccent : AppColors.dayAccent,
                     ),
                   ),
                 ),
@@ -58,7 +101,7 @@ class _HomePageState extends State<HomePage> {
                     child: Container(
                       height: MediaQuery.of(context).size.width - 40,
                       width: MediaQuery.of(context).size.width - 40,
-                      color: _viewModel.isNight ? AppColors.nightAccent : AppColors.dayAccent,
+                      color: viewModel.isNight ? AppColors.nightAccent : AppColors.dayAccent,
                     ),
                   ),
                 ),
@@ -73,27 +116,35 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
 
-                Padding(
-                  padding: const EdgeInsets.only(top: 60),
-                  child: Text(_viewModel.city, style: TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold),),
+                AnimatedCrossFade(
+                  crossFadeState: shouldFadeTemp ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                  duration: Duration(milliseconds: 500),
+                  firstChild: Stack(
+                    alignment: Alignment.topCenter,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 100),
+                        child: Text(viewModel.temperature, style: TextStyle(color: Colors.white54, fontSize: 200, letterSpacing: -10, fontWeight: FontWeight.bold),),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 260),
+                        child: Image.asset(viewModel.iconName, height: 230, width: 300),
+                      ),
+                    ],
+                  ),
+                  secondChild: Container(),
                 ),
 
-                Padding(
-                  padding: const EdgeInsets.only(top: 100),
-                  child: Text(_viewModel.temperature, style: TextStyle(color: Colors.white54, fontSize: 200, letterSpacing: -10, fontWeight: FontWeight.bold),),
-                ),
 
-                Padding(
-                  padding: const EdgeInsets.only(top: 110),
-                  child: Image.asset("assets/images/cloudy.png", height: 500,),
-                ),
 
                 SingleChildScrollView(
+                  controller: _scrollController,
+                  physics: BouncingScrollPhysics(),
                   padding: EdgeInsets.only(
-                    top: 500,
-                    bottom: MediaQuery.of(context).padding.bottom == 0 ? 18 : MediaQuery.of(context).padding.bottom,
-                    left: 18,
-                    right: 18
+                      top: 500,
+                      bottom: MediaQuery.of(context).padding.bottom == 0 ? 18 : MediaQuery.of(context).padding.bottom,
+                      left: 18,
+                      right: 18
                   ),
                   child: Container(
                     width: double.infinity,
@@ -114,15 +165,15 @@ class _HomePageState extends State<HomePage> {
                                 children: [
                                   RichText(
                                     text: TextSpan(
-                                        text: _viewModel.day,
+                                        text: viewModel.day,
                                         style: TextStyle(color: Colors.black, fontSize: 60, fontWeight: FontWeight.bold, fontFamily: "Avenir Next"),
                                         children: <TextSpan>[
-                                          TextSpan(text: _viewModel.month, style: TextStyle(color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold, fontFamily: "Avenir Next"),)
+                                          TextSpan(text: viewModel.month, style: TextStyle(color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold, fontFamily: "Avenir Next"),)
                                         ]
                                     ),
                                   ),
 
-                                  Text(_viewModel.minTemperature + "\n" + _viewModel.maxTemperature, style: TextStyle(fontSize: 17, color: AppColors.grey, fontWeight: FontWeight.w600,), ),
+                                  Text(viewModel.minTemperature + "\n" + viewModel.maxTemperature, style: TextStyle(fontSize: 17, color: AppColors.grey, fontWeight: FontWeight.w600,), ),
                                 ],
                               ),
                             ),
@@ -132,11 +183,12 @@ class _HomePageState extends State<HomePage> {
                             SizedBox(
                               height: 120,
                               child: ListView.builder(
+                                physics: BouncingScrollPhysics(),
                                 padding: EdgeInsets.symmetric(horizontal: 20),
                                 scrollDirection: Axis.horizontal,
                                 itemCount: 9,
                                 itemBuilder: (context, index){
-                                  return Forecast(viewModel: _viewModel.forecastHours[index],);
+                                  return Forecast(viewModel: viewModel.forecastHours[index],);
                                 },
                               ),
                             ),
@@ -157,26 +209,26 @@ class _HomePageState extends State<HomePage> {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text("Precipitazioni", style: TextStyle(color: AppColors.grey, fontSize: 17, fontWeight: FontWeight.w600),),
-                                          Text(_viewModel.rain, style: TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.bold),),
+                                          Text(viewModel.rain, style: TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.bold),),
                                           SizedBox(height: 15,),
                                           Text("HUM", style: TextStyle(color: AppColors.grey, fontSize: 17, fontWeight: FontWeight.w600),),
-                                          Text(_viewModel.humidity, style: TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.bold),),
+                                          Text(viewModel.humidity, style: TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.bold),),
                                           SizedBox(height: 15,),
                                           Text("Vento NNO", style: TextStyle(color: AppColors.grey, fontSize: 17, fontWeight: FontWeight.w600),),
-                                          Text(_viewModel.windSpeed, style: TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.bold),),
+                                          Text(viewModel.windSpeed, style: TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.bold),),
                                         ],
                                       ),
                                       Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text("Nuvolositò", style: TextStyle(color: AppColors.grey, fontSize: 17, fontWeight: FontWeight.w600),),
-                                          Text(_viewModel.cloudiness, style: TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.bold),),
+                                          Text(viewModel.cloudiness, style: TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.bold),),
                                           SizedBox(height: 15,),
                                           Text("Visibilità", style: TextStyle(color: AppColors.grey, fontSize: 17, fontWeight: FontWeight.w600),),
-                                          Text(_viewModel.visibility, style: TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.bold),),
+                                          Text(viewModel.visibility, style: TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.bold),),
                                           SizedBox(height: 15,),
                                           Text("Pressione", style: TextStyle(color: AppColors.grey, fontSize: 17, fontWeight: FontWeight.w600),),
-                                          Text(_viewModel.pressure, style: TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.bold),),
+                                          Text(viewModel.pressure, style: TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.bold),),
                                         ],
                                       ),
                                     ],
@@ -197,11 +249,12 @@ class _HomePageState extends State<HomePage> {
                             SizedBox(
                               height: 120,
                               child: ListView.builder(
+                                physics: BouncingScrollPhysics(),
                                 padding: EdgeInsets.symmetric(horizontal: 20),
                                 scrollDirection: Axis.horizontal,
                                 itemCount: 5,
                                 itemBuilder: (context, index){
-                                  return Forecast(viewModel: _viewModel.forecastDays[index],);
+                                  return Forecast(viewModel: viewModel.forecastDays[index],);
                                 },
                               ),
                             ),
@@ -211,11 +264,41 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           );
         },
+      ),
+          
+
+
+          AnimatedCrossFade(
+            crossFadeState: shouldFadeTemp ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+            duration: Duration(milliseconds: 500),
+            firstChild: Padding(
+              padding: const EdgeInsets.only(top: 60),
+              child: TextField(
+                controller: _cityTextEditingController,
+                enabled: !shouldFadeTemp,
+                autofocus: false,
+                cursorColor: Colors.white,
+                decoration: InputDecoration.collapsed(hintText: "Città", border: InputBorder.none, hintStyle: TextStyle(color: Colors.white54)),
+                textAlign: TextAlign.center,
+                textCapitalization: TextCapitalization.sentences,
+                onChanged: (value){
+                  _dealySearch.run(() {
+                    if(value != "" && value != null) {
+                      _searchForCity(city: value);
+                    }
+                  });
+                },
+                style: TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold),
+              ),
+            ),
+            secondChild: Container(),
+          ),
+        ],
       ),
     );
   }
