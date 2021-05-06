@@ -5,7 +5,7 @@ import 'package:unweather/home/viewModel/ForecastViewModel.dart';
 
 class Forecast extends StatelessWidget {
 
-  ForecastViewModel viewModel;
+  final ForecastViewModel viewModel;
 
   Forecast({this.viewModel});
 

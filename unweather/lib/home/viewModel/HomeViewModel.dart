@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
+import 'package:unweather/home/HomeManager.dart';
 import 'package:unweather/home/model/HomeModel.dart';
 import 'package:unweather/home/viewModel/ForecastViewModel.dart';
-import 'package:unweather/utils/Request.dart';
-import 'package:unweather/utils/ResponseError.dart';
 
 class HomeViewModel {
   String city;
@@ -26,7 +24,9 @@ class HomeViewModel {
   List<ForecastViewModel> forecastHours;
   List<ForecastViewModel> forecastDays;
 
-  HomeViewModel();
+  HomeManager manager;
+
+  HomeViewModel({@required this.manager});
 
   _setup(HomeModel model){
     city = model.city.name;
@@ -91,17 +91,10 @@ class HomeViewModel {
   }
 
   Future<HomeViewModel> featchData({@required String city}) async {
-    var response = await Request.get(
-      route: "/data/2.5/forecast",
-      params: {'q': city, 'units': 'metric', 'lang': 'it'},
-    );
-
-    if(response.statusCode == 200 && response.body["cod"] == "200"){
-      HomeModel model = HomeModel.fromJson(response.body);
-      _setup(model);
+    try {
+      _setup(await manager.featchData(city));
       return this;
-    } else {
-      ResponseError error = ResponseError.fromJson(response.body);
+    } catch(error){
       return Future<HomeViewModel>.error(_toTitleCase(error.message));
     }
   }

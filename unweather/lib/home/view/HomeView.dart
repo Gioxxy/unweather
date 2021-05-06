@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:unweather/home/HomeManager.dart';
 import 'package:unweather/home/model/DealySearch.dart';
 import 'package:unweather/home/view/widget/Forecast.dart';
 import 'package:unweather/home/viewModel/HomeViewModel.dart';
@@ -24,7 +25,7 @@ class _HomeViewState extends State<HomeView> {
   void initState() {
     super.initState();
     _cityTextEditingController = TextEditingController(text: "Torino");
-    _viewModel = HomeViewModel();
+    _viewModel = HomeViewModel(manager: HomeManager());
     _req = _viewModel.featchData(city: _cityTextEditingController.text);
     _scrollController = ScrollController();
     _scrollController.addListener(() {
@@ -124,7 +125,7 @@ class _HomeViewState extends State<HomeView> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(top: 100),
-                        child: Text(viewModel.temperature, style: TextStyle(color: Colors.white54, fontSize: 200, letterSpacing: -10, fontWeight: FontWeight.bold),),
+                        child: Text(viewModel.temperature, key: Key("temp"), style: TextStyle(color: Colors.white54, fontSize: 200, letterSpacing: -10, fontWeight: FontWeight.bold),),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(top: 260),

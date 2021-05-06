@@ -14,8 +14,8 @@ class Response {
 
 class Request {
   
-  static String _host = "api.openweathermap.org";
-  static String _APIKey = "76173de10498da6e19e4b5cd9d491f98";
+  static const String _host = "api.openweathermap.org";
+  static const String _APIKey = "76173de10498da6e19e4b5cd9d491f98";
 
   static Future<Response> get({String route = "", Map<String, String> params, Function(Response) onResponse}) async {
 
