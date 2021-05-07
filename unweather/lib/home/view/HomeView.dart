@@ -49,7 +49,6 @@ class _HomeViewState extends State<HomeView> {
   }
 
   _searchForCity({String city}){
-    print("_searchForCity");
     _req = _viewModel.featchData(city: _cityTextEditingController.text);
     _req.then((value){
       setState(() {});

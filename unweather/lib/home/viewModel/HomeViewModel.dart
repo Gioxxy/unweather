@@ -63,7 +63,6 @@ class HomeViewModel {
       }
       return null;
     }).where((e) => e != null).toList();
-    // forecastDays.first.topText = "Oggi";
   }
 
   String _getIcon(String cod){
