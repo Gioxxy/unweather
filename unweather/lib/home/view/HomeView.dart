@@ -222,7 +222,7 @@ class _HomeViewState extends State<HomeView> {
                                       Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text("Nuvolositò", style: TextStyle(color: AppColors.grey, fontSize: 17, fontWeight: FontWeight.w600),),
+                                          Text("Nuvolosità", style: TextStyle(color: AppColors.grey, fontSize: 17, fontWeight: FontWeight.w600),),
                                           Text(viewModel.cloudiness, style: TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.bold),),
                                           SizedBox(height: 15,),
                                           Text("Visibilità", style: TextStyle(color: AppColors.grey, fontSize: 17, fontWeight: FontWeight.w600),),
